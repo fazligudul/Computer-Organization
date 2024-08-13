@@ -1,0 +1,80 @@
+.data
+    hex_prompt: .asciiz "Enter a hexadecimal number: "
+    dec_result: .asciiz "Decimal equivalent: "
+    newline: .asciiz "\n"
+    continue_prompt: .asciiz "Do you want to continue? (Y/N): "
+    invalid_input: .asciiz "Invalid input. Please enter a valid hexadecimal number.\n"
+    input_buffer: .space 256   # Buffer to store user input
+
+.text
+main:
+    li $v0, 4
+    la $a0, hex_prompt
+    syscall
+
+    li $v0, 8
+    la $a0, input_buffer
+    li $a1, 256
+    syscall
+
+    la $a0, input_buffer
+    jal convertHexToDec
+    move $t0, $v0
+
+    li $v0, 4
+    la $a0, dec_result
+    syscall
+
+    move $a0, $t0
+    li $v0, 1
+    syscall
+
+    li $v0, 4
+    la $a0, newline
+    syscall
+
+    li $v0, 4
+    la $a0, continue_prompt
+    syscall
+
+    li $v0, 8
+    la $a0, input_buffer
+    li $a1, 256
+    syscall
+
+    lb $t1, input_buffer
+    li $t2, 'Y'
+    beq $t1, $t2, main
+
+    li $v0, 10
+    syscall
+
+convertHexToDec:
+    li $t1, 0
+
+convert_loop:
+    lbu $t2, 0($a0)
+    beqz $t2, end_conversion
+
+    blt $t2, 'A', check_digit
+
+    li $t3, 65
+    sub $t2, $t2, $t3
+    addi $t2, $t2, 10
+    j update_result
+
+check_digit:
+    li $t3, 48
+    sub $t2, $t2, $t3
+
+update_result:
+    mul $t1, $t1, 16
+    add $t1, $t1, $t2
+    addi $a0, $a0, 1
+    j convert_loop
+
+end_conversion:
+    move $v0, $t1
+    jr $ra
+
+
