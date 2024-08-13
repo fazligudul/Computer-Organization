@@ -1,0 +1,133 @@
+
+CS224 / Lab No. 7
+Sec No 6
+Fazlı Güdül
+22002785
+10/05/2024
+
+I don't have any group member.
+
+Part 2-)
+/*
+
+	DC motor!
+	Configiration for this.
+	
+	Connect PORTA to DC motor
+	Jumpers of porta: 5V, pull up
+	
+	Connect PortE to push buttons
+	Jumpers of porte: 3V, pull up
+
+*/
+
+
+void main() {
+    AD1PCFG = 0xFFFF;
+    DDPCON.JTAGEN = 0; // disable JTAG
+
+    
+    TRISE = 0xFFFF;
+    TRISA = 0x0000;
+    PORTE = 0xFFFF;
+
+    while(1) {
+        if ( !PORTEbits.RE1 == 0 && !PORTEbits.RE0 == 0) { 
+            Delay_ms(1000);
+            PORTAbits.RA1 = 0;
+            PORTAbits.RA2 = 0;
+        }
+        else if (PORTEbits.RE1 == 1) {
+            Delay_ms(1000); 
+            PORTAbits.RA2 = 1;
+            Delay_ms(1000);
+            PORTAbits.RA2 = 0;  // to stop motor after 1 second
+        }
+        else if (PORTEbits.RE0 == 1) {
+            Delay_ms(1000);  
+            PORTAbits.RA1 = 1;
+            Delay_ms(1000);  
+            PORTAbits.RA1 = 0;  // to stop motor after 1 second
+        }
+
+    }
+}
+
+
+
+
+Part3-)
+/*
+Connect portA to J1 Port of 4 Digit Seven Segment Module
+Jumpers of portA are : 5V, pull down 
+
+Connect portE to J2 Port of 4 Digit Seven Segment Module
+Jumpers of portE are : 5V, pull down 
+*/
+
+unsigned char binary_pattern[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
+int fib1 = 0;
+int fib2 = 1;
+int fib;
+int digit;
+int i;
+
+// Function for integer exponentiation
+int power(int base, int exponent) {
+    int result = 1;
+    while (exponent != 0) {
+        result *= base;
+        exponent--;
+    }
+    return result;
+}
+
+void main() {
+    // Configure AN pins as digital I/O
+    AD1PCFG = 0xFFFF;
+    JTAGEN_bit = 0; // Disable JTAG
+
+    // Port A is output to Seven Segment Display
+    TRISA = 0x00;
+
+    // Port E is output for controlling digits
+    TRISE = 0x00;
+
+    while (1) {
+        fib = fib1 + fib2; // Calculate next Fibonacci number
+        fib1 = fib2;
+        fib2 = fib;
+
+
+        digit = 0;
+        for (i = 0; i < 4; i++) {
+            PORTA = binary_pattern[(fib / power(10, 3 - i)) % 10]; 
+            PORTE = 1 << digit; 
+            if (fib == 0) {
+            Delay_ms(100);
+            }
+            else if(fib==1){
+            Delay_ms(100);
+            }
+            else if(fib==2){
+            Delay_ms(200);
+            }
+            else if(fib==3){
+            Delay_ms(300);
+            }
+            else if(fib==5){
+            Delay_ms(500);
+            }
+            else if(fib==8){
+            Delay_ms(800);
+            }
+            else if(fib==13){
+            Delay_ms(1300);
+            }
+            else if(fib==21){
+            Delay_ms(2100);
+            }
+            digit++; 
+        }
+    }
+}
