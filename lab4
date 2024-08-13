@@ -1,0 +1,49 @@
+module top_tb();
+
+    // Initial variables
+    logic [31:0] writeData, dataAdr, pc, instr;
+    logic clk, reset, memWrite;
+
+    // Device under test
+    top dut (
+        .clk(clk),
+        .reset(reset),
+        .writedata(writeData),
+        .dataadr(dataAdr),
+        .readdata(pc),
+        .memwrite(memWrite)
+    );
+
+    // Reset generation process
+    initial begin
+        clk = 0;
+        reset = 1; 
+        #20ns; 
+        reset = 0; // Reset signal after 20ns
+        #100; // Delay to allow stabilization
+    end
+    
+    // Clock generation process
+    always begin
+        #10; 
+        clk = ~clk;  // Clock rising edge every 10 ns
+    end
+    
+    // Test scenarios
+    initial begin
+        instr = 32'h20020005;  
+        #10; 
+        
+        instr = 32'h2003000c; 
+        #10; 
+
+        instr = 32'h2067fff7;  	
+        #10; 
+
+        instr = 32'h00e22025; 
+        #10;  
+
+        $finish;
+    end
+
+endmodule
